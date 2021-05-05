@@ -363,9 +363,10 @@ func (s *SpanReader) multiRead(ctx context.Context, traceIDs []model.TraceID, st
 		}
 		searchRequests := make([]*elastic.SearchRequest, len(traceIDs))
 		for i, traceID := range traceIDs {
-			query := buildTraceByIDQuery(traceID)
-			boolQuery := elastic.NewBoolQuery().Must(startTimeRangeQuery)
-			query = boolQuery.Must(query) // Adding time range query on startTimeMillis field.
+			traceQuery := buildTraceByIDQuery(traceID)
+			query := elastic.NewBoolQuery()
+			    .Must(startTimeRangeQuery)
+			    .Must(traceQuery)
 			if val, ok := searchAfterTime[traceID]; ok {
 				nextTime = val
 			}
