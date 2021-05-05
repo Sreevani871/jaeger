@@ -364,19 +364,17 @@ func (s *SpanReader) multiRead(ctx context.Context, traceIDs []model.TraceID, st
 		searchRequests := make([]*elastic.SearchRequest, len(traceIDs))
 		for i, traceID := range traceIDs {
 			traceQuery := buildTraceByIDQuery(traceID)
-			query := elastic.NewBoolQuery()
-			    .Must(startTimeRangeQuery)
-			    .Must(traceQuery)
+			query := elastic.NewBoolQuery().
+				Must(startTimeRangeQuery).
+				Must(traceQuery)
 			if val, ok := searchAfterTime[traceID]; ok {
 				nextTime = val
 			}
 
-			src := s.sourceFn(query, nextTime)
-			searchRequest := elastic.NewSearchRequest().
+			s := s.sourceFn(query, nextTime)
+			searchRequests[i] =  elastic.NewSearchRequest().
 				IgnoreUnavailable(true).
-				Source(src)
-
-			searchRequests[i] = searchRequest
+				Source(s)
 		}
 		// set traceIDs to empty
 		traceIDs = nil
